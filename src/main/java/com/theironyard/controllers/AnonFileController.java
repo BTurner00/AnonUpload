@@ -30,16 +30,34 @@ public class AnonFileController {
     }
 
     @RequestMapping(path="/upload", method = RequestMethod.POST)
-    public String upload(MultipartFile file) throws IOException {
-        File dir = new File ("public/files");
+    public String upload(MultipartFile file, String comment, Boolean permFile) throws IOException {
+        File dir = new File("public/files");
         dir.mkdirs();
 
         File uploadedFile = File.createTempFile("file", file.getOriginalFilename(), dir);
-        FileOutputStream fos  = new FileOutputStream(uploadedFile);
+        FileOutputStream fos = new FileOutputStream(uploadedFile);
         fos.write(file.getBytes());
 
-        AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName());
+        AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName(), comment, permFile);
+        if (comment == null) {
+            anonFile.setComment(file.getOriginalFilename());
+        }
+        if(permFile != null) {
+            anonFile.setPermFile(true);
+        } else {
+            anonFile.setPermFile(false);
+        }
+
         files.save(anonFile);
+        int count = files.countByPermFileFalse();
+
+        if (files.countByPermFileFalse() > 2) {
+
+            AnonFile deleteAnonFile =(files.findFirstByPermFileFalseOrderByIdAsc());
+            files.delete(deleteAnonFile);
+            File deleteFile = new File("/public/files/" + deleteAnonFile.getRealFileName());
+            deleteFile.delete();
+        }
         return "redirect:/";
 
     }
