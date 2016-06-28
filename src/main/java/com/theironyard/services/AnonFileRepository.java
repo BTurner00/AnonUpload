@@ -11,6 +11,7 @@ public interface AnonFileRepository extends CrudRepository<AnonFile, Integer> {
     int countByPermFileFalse();
     AnonFile findFirstByPermFileFalseOrderByIdAsc();
 
+
    //@Query("SELECT min(id) FROM files")
     //int getMinId();
 }

@@ -50,9 +50,8 @@ public class AnonFileController {
         }
 
         files.save(anonFile);
-        int count = files.countByPermFileFalse();
 
-        if (files.countByPermFileFalse() > 2) {
+        if (files.countByPermFileFalse() > 5) {
 
             AnonFile deleteAnonFile = (files.findFirstByPermFileFalseOrderByIdAsc());
             files.delete(deleteAnonFile);
@@ -63,12 +62,23 @@ public class AnonFileController {
 
     }
 
-    @RequestMapping(path="/delete", method=RequestMethod.DELETE)
-    public String delete(int id) {
-       // files.
-        AnonFile deleteAnonFile = files.findOne(id);
-        files.delete(id);
-        File deleteFile = new File ("public/files/" + deleteAnonFile.getRealFileName());
+    @RequestMapping(path="/delete", method=RequestMethod.POST)
+    public String delete(String deletePassword) throws Exception {
+        Iterable<AnonFile> anonFiles= files.findAll();
+        for (AnonFile a: anonFiles) {
+            if (deletePassword == "" || deletePassword == null) {
+                throw new Exception("Enter a valid password!");
+            }
+            else if (PasswordStorage.verifyPassword(deletePassword, a.getPassword())) {
+                int id = a.getId();
+                AnonFile deleteAnonFile = files.findOne(id);
+                files.delete(id);
+                File deleteFile = new File ("public/files/" + deleteAnonFile.getRealFileName());
+                deleteFile.delete();
+            }
+        }
+
+
 
         return "redirect:/";
     }
