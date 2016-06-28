@@ -2,6 +2,7 @@ package com.theironyard.controllers;
 
 import com.theironyard.entities.AnonFile;
 import com.theironyard.services.AnonFileRepository;
+import com.theironyard.utils.PasswordStorage;
 import org.h2.tools.Server;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,7 +31,7 @@ public class AnonFileController {
     }
 
     @RequestMapping(path="/upload", method = RequestMethod.POST)
-    public String upload(MultipartFile file, String comment, Boolean permFile) throws IOException {
+    public String upload(MultipartFile file, String comment, Boolean permFile, String password) throws IOException, PasswordStorage.CannotPerformOperationException {
         File dir = new File("public/files");
         dir.mkdirs();
 
@@ -38,7 +39,7 @@ public class AnonFileController {
         FileOutputStream fos = new FileOutputStream(uploadedFile);
         fos.write(file.getBytes());
 
-        AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName(), comment, permFile);
+        AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName(), comment, permFile, PasswordStorage.createHash(password));
         if (comment == null) {
             anonFile.setComment(file.getOriginalFilename());
         }
@@ -53,12 +54,22 @@ public class AnonFileController {
 
         if (files.countByPermFileFalse() > 2) {
 
-            AnonFile deleteAnonFile =(files.findFirstByPermFileFalseOrderByIdAsc());
+            AnonFile deleteAnonFile = (files.findFirstByPermFileFalseOrderByIdAsc());
             files.delete(deleteAnonFile);
             File deleteFile = new File("/public/files/" + deleteAnonFile.getRealFileName());
             deleteFile.delete();
         }
         return "redirect:/";
 
+    }
+
+    @RequestMapping(path="/delete", method=RequestMethod.DELETE)
+    public String delete(int id) {
+       // files.
+        AnonFile deleteAnonFile = files.findOne(id);
+        files.delete(id);
+        File deleteFile = new File ("public/files/" + deleteAnonFile.getRealFileName());
+
+        return "redirect:/";
     }
 }

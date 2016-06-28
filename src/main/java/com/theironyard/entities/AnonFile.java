@@ -21,15 +21,18 @@ public class AnonFile {
     String comment;
     @Column (nullable=false)
     Boolean permFile;
+    @Column
+    String password;
 
     public AnonFile() {
     }
 
-    public AnonFile(String originalFileName, String realFileName, String comment, Boolean permFile) {
+    public AnonFile(String originalFileName, String realFileName, String comment, Boolean permFile, String password) {
         this.originalFileName = originalFileName;
         this.realFileName = realFileName;
         this.comment = comment;
         this.permFile = permFile;
+        this.password = password;
     }
 
     public Boolean getPermFile() {
@@ -70,5 +73,13 @@ public class AnonFile {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
